@@ -10,7 +10,11 @@
 // http://www.informit.com/articles/article.aspx?p=1431312&seqNum=5
 
 #import "ViewController.h"
+// Helper
 #import "TVGeometry.h"
+// Subview
+#import "TVRightProgressView.h"
+#import "TVLeftProgressView.h"
 
 typedef CGFloat TVRotationDirection;
 const TVRotationDirection TVRotationAwayFromCenter = 1.f;
@@ -27,8 +31,8 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 
 @property (strong, nonatomic) UIView *squareView;
 
-@property (strong, nonatomic) UIView *rightProgressView;
-@property (strong, nonatomic) UIView *leftProgressView;
+@property (strong, nonatomic) TVRightProgressView *rightProgressView;
+@property (strong, nonatomic) TVLeftProgressView *leftProgressView;
 
 @property (nonatomic) CGPoint originalCenter;
 @property (nonatomic) BOOL completeActionOnDragRelease;
@@ -38,7 +42,6 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 @property (strong, nonatomic) IBOutlet UILabel *rotationValueLabel;
 
 @property (nonatomic) TVSwipeDirection swipeDirection;
-@property (strong, nonatomic) CAShapeLayer *rightMaskLayer;
 
 @end
 
@@ -68,12 +71,19 @@ CGFloat progress = 0;
     
     [self addGestures];
     
-    _squareView = [[UIView alloc] init];
-    _squareView.frame = CGRectMake(0, 0, 320, 200);
-    _squareView.center = CGPointMake(self.view.center.x, self.view.center.y * 0.75);
-    _squareView.backgroundColor = UIColor.redColor;
-    [self.view addSubview:_squareView];
+    self.squareView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
+    self.squareView.center = CGPointMake(self.view.center.x, self.view.center.y * 0.75);
+    self.squareView.backgroundColor = UIColor.grayColor;
+    [self.view addSubview:self.squareView];
     
+    self.rightProgressView = [[TVRightProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
+    self.rightProgressView.frame = self.squareView.bounds;
+    [self.squareView addSubview:self.rightProgressView];
+    
+    self.leftProgressView = [[TVLeftProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
+    self.leftProgressView.frame = self.squareView.bounds;
+    [self.squareView addSubview:self.leftProgressView];
+
     [self circleForProgress:progress];
 }
 
@@ -110,9 +120,11 @@ CGFloat progress = 0;
                                   delay:0.02
                  usingSpringWithDamping:0.55
                   initialSpringVelocity:0.5
-                                options:UIViewAnimationOptionCurveEaseOut animations:^{
-                                    self.squareView.center = self.originalCenter;
-                                    self.squareView.transform = CGAffineTransformIdentity;
+            options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.squareView.center = self.originalCenter;
+                self.squareView.transform = CGAffineTransformIdentity;
+                progress = 0;
+                [self circleForProgress:0];
             } completion:nil];
         }
     }
@@ -121,17 +133,13 @@ CGFloat progress = 0;
 - (void)swipeDirectionForTranslation:(CGPoint)translation {
     if (translation.x > 0) {
         self.swipeDirection = TVSwipeRight;
-        self.squareView.backgroundColor = UIColor.blueColor;
     } else {
         self.swipeDirection = TVSwipeLeft;
-        self.squareView.backgroundColor = UIColor.redColor;
     }
 }
 
 - (void)swipeProgressForTranslation:(CGPoint)translation {
-    progress = fabs(translation.x) / self.squareView.frame.size.width;
-    NSLog(@"Progress = %f", progress);
-    
+    progress = fabs(translation.x) / (self.squareView.frame.size.width / 2);
     [self circleForProgress:progress];
 }
 
@@ -143,97 +151,41 @@ CGFloat progress = 0;
 
 - (void)circleForProgress:(CGFloat)progress {
     /// Creates two circular UIBezierPath instances; one is the size of the button, and the second has a radius large enough to cover the entire screen. The final animation will be between these two bezier paths.
-    
+    CGPoint extremePoint = CGPointMake(self.squareView.center.x * progress, CGRectGetMinY(self.squareView.frame) * progress);
+    CGFloat radius = sqrt((extremePoint.x * extremePoint.x) + (extremePoint.y * extremePoint.y));
+
     CGRect rightTopCircle = CGRectMake(CGRectGetMaxX(self.squareView.bounds) + 5,
                                        CGRectGetMinY(self.squareView.bounds)  - 5,
                                        5,
                                        5);
-    UIBezierPath *rightMaskPathStart = [UIBezierPath bezierPathWithOvalInRect:rightTopCircle];
-    // var extremePoint = CGPoint(x: button.center.x - 0, y: button.center.y - CGRectGetHeight(toViewController.view.bounds))
-    CGPoint extremePoint = CGPointMake(self.squareView.center.x, CGRectGetMinY(self.squareView.frame));
-    CGFloat radius = sqrt((extremePoint.x * extremePoint.x) + (extremePoint.y * extremePoint.y));
     UIBezierPath *rightMaskPathFinal = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(rightTopCircle, -radius, -radius)];
+    
+    CGRect leftTopCircle = CGRectMake(CGRectGetMinX(self.squareView.bounds) - 5,
+                                      CGRectGetMinY(self.squareView.bounds) - 5,
+                                      5,
+                                      5);
+    UIBezierPath *leftMaskPathFinal = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(leftTopCircle, -radius, -radius)];
     
     /// Creates a new CAShapeLayer to represent the circle mask.
     /// You assign its path value with the final circular path after the animation
     /// to avoid the layer snapping back after the animation completes.
     
-    self.rightMaskLayer = [[CAShapeLayer alloc] init];
-    self.rightMaskLayer.path = rightMaskPathFinal.CGPath;
-    self.squareView.layer.mask = self.rightMaskLayer;
-
-    /// Creates a CABasicAnimation on the path key path that goes from circleMaskPathInitial to circleMaskPathFinal.
-    /// You also register a delegate, as you’ll do some cleanup after the animation completes.
-//    CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
-//    maskAnimation.fromValue = (id)(rightMaskPathStart.CGPath);
-//    maskAnimation.toValue = (id)(rightMaskPathFinal.CGPath);
-//    maskAnimation.duration = 5.0;
-//    maskAnimation.delegate = self;
+    CAShapeLayer *rightMaskLayer = [[CAShapeLayer alloc] init];
+    rightMaskLayer.path = rightMaskPathFinal.CGPath;
     
-    // [self.rightMaskLayer addAnimation:maskAnimation forKey:@"path"];
-    // self.squareView.layer.mask = rightMaskPathFinal.CGPath;
-}
-
-/*
-- (CAKeyframeAnimation *)rotateAnimation {
-    CAKeyframeAnimation *rotation = [CAKeyframeAnimation animation];
-    rotation.keyPath = @"transform.rotation";
-    rotation.values = @[ @0, @0.14, @0 ];
-    rotation.duration = 1.2;
-    rotation.timingFunctions = @[
-                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut],
-                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]
-                                 ];
-    return rotation;
-}
-
-- (CAKeyframeAnimation *)positionRight {
-    CAKeyframeAnimation *position = [CAKeyframeAnimation animation];
-    position.keyPath = @"position";
-    position.values = @[
-                        [NSValue valueWithCGPoint:CGPointZero],
-                        [NSValue valueWithCGPoint:CGPointMake(120, 50)],
-                        [NSValue valueWithCGPoint:CGPointZero]
-                        ];
-    position.timingFunctions = @[
-                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut],
-                                 [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]
-                                 ];
-    position.additive = YES;
-    position.duration = 1.2;
-    return position;
-}
-
-- (void)groupAnimation {
-    CAAnimationGroup *group = [[CAAnimationGroup alloc] init];
-    group.animations = @ [ [self rotateAnimation], [self positionRight] ];
-    group.duration = 1.2;
-    group.beginTime = 0.0;
-    group.repeatCount = 1;
+    CAShapeLayer *leftMaskLayer = [[CAShapeLayer alloc] init];
+    leftMaskLayer.path = leftMaskPathFinal.CGPath;
     
-    [self.squareView.layer addAnimation:group forKey:nil];
-    self.squareView.layer.speed = 0.0;
-    self.squareView.layer.beginTime = 0.0;
+    if (progress == 0) {
+        self.leftProgressView.layer.mask = leftMaskLayer;
+        self.rightProgressView.layer.mask = rightMaskLayer;
+    }  else {
+        if (self.swipeDirection == TVSwipeLeft) {
+            self.rightProgressView.layer.mask = rightMaskLayer;
+        } else if (self.swipeDirection == TVSwipeRight) {
+            self.leftProgressView.layer.mask = leftMaskLayer;
+        }
+    }
 }
-
-- (void)circularAnimation {
-    CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
-    animation.duration = 4;
-    animation.repeatCount = MAXFLOAT;
-    animation.path = [self drawSemiCircle].CGPath;
-    animation.additive = YES;
-    animation.calculationMode = kCAAnimationPaced;
-    animation.rotationMode = kCAAnimationRotateAuto;
-    [_squareView.layer addAnimation:animation forKey:nil];
-}
-
-- (UIBezierPath *)drawSemiCircle {
-    return [UIBezierPath bezierPathWithArcCenter: self.view.center
-                                          radius: 320
-                                      startAngle: (M_PI + 1.1)
-                                        endAngle: -(M_PI * 2 + 1.1)
-                                       clockwise: YES];
-}
-*/
 
 @end
