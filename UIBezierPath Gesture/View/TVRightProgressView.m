@@ -50,15 +50,15 @@
     self.titleLabel.textColor = [UIColor whiteColor];
     [self.holderView addSubview:self.titleLabel];
     
-    self.imageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.holderView.frame.size.width - 60, 45, 55, 55)];
+    self.imageView = [[UIImageView alloc] initWithFrame:CGRectMake(self.holderView.frame.size.width - 60, 35, 55, 55)];
     self.imageView.backgroundColor = [UIColor whiteColor];
     [self.holderView addSubview:self.imageView];
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    CGPoint origin = CGPointMake(self.center.x - 5 * (1 + self.progress * 0.25),
-                                 20 + 5 * (1 + self.progress * 0.75));
+    CGPoint origin = CGPointMake(20 + self.center.x - 5 * (1 + self.progress * 0.25),
+                                self.center.y * (self.progress * 0.75));
     self.holderView.frame = CGRectMake(origin.x, origin.y, 120, 60);
 }
 

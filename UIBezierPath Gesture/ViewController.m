@@ -36,12 +36,12 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 
 @property (nonatomic) CGPoint originalCenter;
 @property (nonatomic) BOOL completeActionOnDragRelease;
+
 @property (nonatomic) TVRotationDirection rotationDirection;
+@property (nonatomic) TVSwipeDirection swipeDirection;
 
 @property (strong, nonatomic) IBOutlet UILabel *yTranslationValueLabel;
 @property (strong, nonatomic) IBOutlet UILabel *rotationValueLabel;
-
-@property (nonatomic) TVSwipeDirection swipeDirection;
 
 @end
 
@@ -115,7 +115,17 @@ CGFloat progress = 0;
     }
     
     if (recognizer.state == UIGestureRecognizerStateEnded) {
-        if (!self.completeActionOnDragRelease) {
+        if (self.completeActionOnDragRelease) {
+             if (self.swipeDirection == TVSwipeLeft) {
+                 [UIView animateWithDuration:0.1 animations:^{
+                     self.squareView.frame = CGRectOffset(self.squareView.frame, -400, 300);
+                 }];
+             } else if (self.swipeDirection == TVSwipeRight) {
+                 [UIView animateWithDuration:0.1 animations:^{
+                     self.squareView.frame = CGRectOffset(self.squareView.frame, 400, 300);
+                 }];
+             }
+        } else {
             [UIView animateWithDuration:0.32
                                   delay:0.02
                  usingSpringWithDamping:0.55
@@ -140,6 +150,9 @@ CGFloat progress = 0;
 
 - (void)swipeProgressForTranslation:(CGPoint)translation {
     progress = fabs(translation.x) / (self.squareView.frame.size.width / 2);
+    if (progress >= 0.8) {
+        self.completeActionOnDragRelease = YES;
+    }
     [self circleForProgress:progress];
 }
 
@@ -154,16 +167,14 @@ CGFloat progress = 0;
     CGPoint extremePoint = CGPointMake(self.squareView.center.x * progress, CGRectGetMinY(self.squareView.frame) * progress);
     CGFloat radius = sqrt((extremePoint.x * extremePoint.x) + (extremePoint.y * extremePoint.y));
 
-    CGRect rightTopCircle = CGRectMake(CGRectGetMaxX(self.squareView.bounds) + 5,
-                                       CGRectGetMinY(self.squareView.bounds)  - 5,
-                                       5,
-                                       5);
-    UIBezierPath *rightMaskPathFinal = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(rightTopCircle, -radius, -radius)];
+    CGFloat size = 5;
+    CGFloat yPt = CGRectGetMinY(self.squareView.bounds) - size;
+    CGFloat rightX = CGRectGetMaxX(self.squareView.bounds) + size;
+    CGFloat leftX = CGRectGetMinX(self.squareView.bounds) - size;
+    CGRect rightTopCircle = CGRectMake(rightX, yPt, size, size);
+    CGRect leftTopCircle = CGRectMake(leftX, yPt, size, size);
     
-    CGRect leftTopCircle = CGRectMake(CGRectGetMinX(self.squareView.bounds) - 5,
-                                      CGRectGetMinY(self.squareView.bounds) - 5,
-                                      5,
-                                      5);
+    UIBezierPath *rightMaskPathFinal = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(rightTopCircle, -radius, -radius)];
     UIBezierPath *leftMaskPathFinal = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(leftTopCircle, -radius, -radius)];
     
     /// Creates a new CAShapeLayer to represent the circle mask.
