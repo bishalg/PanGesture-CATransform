@@ -40,6 +40,7 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 @property (nonatomic) TVRotationDirection rotationDirection;
 @property (nonatomic) TVSwipeDirection swipeDirection;
 
+@property (strong, nonatomic) UILabel *bgRateLabel;
 @property (strong, nonatomic) IBOutlet UILabel *yTranslationValueLabel;
 @property (strong, nonatomic) IBOutlet UILabel *rotationValueLabel;
 
@@ -74,6 +75,7 @@ CGFloat progress = 0;
     self.squareView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
     self.squareView.center = CGPointMake(self.view.center.x, self.view.center.y * 0.75);
     self.squareView.backgroundColor = UIColor.grayColor;
+    self.squareView.layer.shouldRasterize = YES;
     [self.view addSubview:self.squareView];
     
     self.rightProgressView = [[TVRightProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
@@ -83,6 +85,13 @@ CGFloat progress = 0;
     self.leftProgressView = [[TVLeftProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
     self.leftProgressView.frame = self.squareView.bounds;
     [self.squareView addSubview:self.leftProgressView];
+    
+    self.bgRateLabel = [[UILabel alloc] initWithFrame:self.squareView.frame];
+    self.bgRateLabel.font = [UIFont systemFontOfSize:25];
+    self.bgRateLabel.numberOfLines = 2;
+    self.bgRateLabel.textAlignment = NSTextAlignmentCenter;
+    [self.view addSubview:self.bgRateLabel];
+    [self.view bringSubviewToFront:self.squareView];
 
     [self circleForProgress:progress];
 }
@@ -117,12 +126,12 @@ CGFloat progress = 0;
     if (recognizer.state == UIGestureRecognizerStateEnded) {
         if (self.completeActionOnDragRelease) {
              if (self.swipeDirection == TVSwipeLeft) {
-                 [UIView animateWithDuration:0.1 animations:^{
-                     self.squareView.frame = CGRectOffset(self.squareView.frame, -400, 300);
+                 [UIView animateWithDuration:0.15 animations:^{
+                     self.squareView.frame = CGRectOffset(self.squareView.frame, -500, 400);
                  }];
              } else if (self.swipeDirection == TVSwipeRight) {
-                 [UIView animateWithDuration:0.1 animations:^{
-                     self.squareView.frame = CGRectOffset(self.squareView.frame, 400, 300);
+                 [UIView animateWithDuration:0.15 animations:^{
+                     self.squareView.frame = CGRectOffset(self.squareView.frame, 500, 400);
                  }];
              }
         } else {
@@ -143,15 +152,29 @@ CGFloat progress = 0;
 - (void)swipeDirectionForTranslation:(CGPoint)translation {
     if (translation.x > 0) {
         self.swipeDirection = TVSwipeRight;
+        self.bgRateLabel.textColor = UIColor.blueColor;
     } else {
         self.swipeDirection = TVSwipeLeft;
+        self.bgRateLabel.textColor = UIColor.redColor;
     }
+    self.bgRateLabel.text = [self textForDirection:self.swipeDirection];
+}
+
+- (NSString *)textForDirection:(TVSwipeDirection)direction {
+    if (self.swipeDirection == TVSwipeRight) {
+        return @"I want to \nwatch this";
+    } else if (self.swipeDirection == TVSwipeLeft) {
+        return @"I don't want \nto watch this";
+    }
+    return @"";
 }
 
 - (void)swipeProgressForTranslation:(CGPoint)translation {
     progress = fabs(translation.x) / (self.squareView.frame.size.width / 2);
-    if (progress >= 0.8) {
+    if (progress >= 0.9) {
         self.completeActionOnDragRelease = YES;
+    } else {
+        self.completeActionOnDragRelease = NO;
     }
     [self circleForProgress:progress];
 }

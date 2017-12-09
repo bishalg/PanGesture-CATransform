@@ -58,7 +58,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     CGPoint origin = CGPointMake(20 + 5 * (1 + self.progress * 0.25),
-                                 20 + self.center.y * (self.progress * 0.75));
+                                 20 + self.center.y * (self.progress * 0.50));
     self.holderView.frame = CGRectMake(origin.x, origin.y, 120, 60);
 }
 
