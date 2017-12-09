@@ -10,4 +10,6 @@
 
 @interface TVLeftProgressView : UIView
 
+@property (nonatomic) CGFloat progress;
+
 @end

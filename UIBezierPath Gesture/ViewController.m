@@ -176,14 +176,17 @@ CGFloat progress = 0;
     CAShapeLayer *leftMaskLayer = [[CAShapeLayer alloc] init];
     leftMaskLayer.path = leftMaskPathFinal.CGPath;
     
+    /// For Initial Case Mask Both the layer out !
     if (progress == 0) {
         self.leftProgressView.layer.mask = leftMaskLayer;
         self.rightProgressView.layer.mask = rightMaskLayer;
     }  else {
         if (self.swipeDirection == TVSwipeLeft) {
             self.rightProgressView.layer.mask = rightMaskLayer;
+            self.rightProgressView.progress = progress;
         } else if (self.swipeDirection == TVSwipeRight) {
             self.leftProgressView.layer.mask = leftMaskLayer;
+            self.leftProgressView.progress = progress;
         }
     }
 }
