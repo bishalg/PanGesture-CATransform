@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0525C9E71FDE172200450CCC /* TVCircularProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0525C9E51FDE172200450CCC /* TVCircularProgressView.m */; };
 		052D43AB1FD7926A00D9B6E2 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 052D43AA1FD7926A00D9B6E2 /* AppDelegate.m */; };
 		052D43AE1FD7926A00D9B6E2 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 052D43AD1FD7926A00D9B6E2 /* ViewController.m */; };
 		052D43B11FD7926A00D9B6E2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 052D43AF1FD7926A00D9B6E2 /* Main.storyboard */; };
@@ -19,6 +20,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0525C9E51FDE172200450CCC /* TVCircularProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TVCircularProgressView.m; sourceTree = "<group>"; };
+		0525C9E61FDE172200450CCC /* TVCircularProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TVCircularProgressView.h; sourceTree = "<group>"; };
 		052D43A61FD7926A00D9B6E2 /* UIBezierPath Gesture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UIBezierPath Gesture.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		052D43A91FD7926A00D9B6E2 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		052D43AA1FD7926A00D9B6E2 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -86,6 +89,8 @@
 		055488CE1FDAFBBE00864BB1 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				0525C9E61FDE172200450CCC /* TVCircularProgressView.h */,
+				0525C9E51FDE172200450CCC /* TVCircularProgressView.m */,
 				055488CF1FDAFBDD00864BB1 /* TVRightProgressView.h */,
 				055488D01FDAFBDD00864BB1 /* TVRightProgressView.m */,
 				055488D21FDAFBF800864BB1 /* TVLeftProgressView.h */,
@@ -165,6 +170,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0525C9E71FDE172200450CCC /* TVCircularProgressView.m in Sources */,
 				052D43AE1FD7926A00D9B6E2 /* ViewController.m in Sources */,
 				055488D11FDAFBDD00864BB1 /* TVRightProgressView.m in Sources */,
 				055488D41FDAFBF800864BB1 /* TVLeftProgressView.m in Sources */,

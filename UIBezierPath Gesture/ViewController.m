@@ -15,6 +15,7 @@
 // Subview
 #import "TVRightProgressView.h"
 #import "TVLeftProgressView.h"
+#import "TVCircularProgressView.h"
 
 typedef CGFloat TVRotationDirection;
 const TVRotationDirection TVRotationAwayFromCenter = 1.f;
@@ -33,6 +34,7 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 
 @property (strong, nonatomic) TVRightProgressView *rightProgressView;
 @property (strong, nonatomic) TVLeftProgressView *leftProgressView;
+@property (strong, nonatomic) TVCircularProgressView *circularProgressView;
 
 @property (nonatomic) CGPoint originalCenter;
 @property (nonatomic) BOOL completeActionOnDragRelease;
@@ -41,6 +43,8 @@ typedef NS_ENUM(NSUInteger, TVSwipeDirection) {
 @property (nonatomic) TVSwipeDirection swipeDirection;
 
 @property (strong, nonatomic) UILabel *bgRateLabel;
+@property (strong, nonatomic) UIButton *circularButton;
+
 @property (strong, nonatomic) IBOutlet UILabel *yTranslationValueLabel;
 @property (strong, nonatomic) IBOutlet UILabel *rotationValueLabel;
 
@@ -72,18 +76,29 @@ CGFloat progress = 0;
     
     [self addGestures];
     
+    CGFloat size = 60;
+    self.circularButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [self.circularButton addTarget:self action:@selector(buttonAction:) forControlEvents:UIControlEventTouchUpInside];
+    self.circularButton.backgroundColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+    self.circularButton.frame = CGRectMake(self.view.center.x - size / 2, 500, size, size);
+    self.circularButton.layer.cornerRadius = size / 2;
+    [self.view addSubview:self.circularButton];
+    
+    self.circularProgressView = [[TVCircularProgressView alloc] initWithFrame:self.circularButton.bounds];
+    self.circularProgressView.strokeColor = [UIColor redColor];
+    self.circularProgressView.userInteractionEnabled = NO;
+    [self.circularButton addSubview:self.circularProgressView];
+    
     self.squareView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
     self.squareView.center = CGPointMake(self.view.center.x, self.view.center.y * 0.75);
     self.squareView.backgroundColor = UIColor.grayColor;
     self.squareView.layer.shouldRasterize = YES;
     [self.view addSubview:self.squareView];
     
-    self.rightProgressView = [[TVRightProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
-    self.rightProgressView.frame = self.squareView.bounds;
+    self.rightProgressView = [[TVRightProgressView alloc] initWithFrame:self.squareView.bounds];
     [self.squareView addSubview:self.rightProgressView];
     
-    self.leftProgressView = [[TVLeftProgressView alloc] initWithFrame:CGRectMake(0, 0, 320, 200)];
-    self.leftProgressView.frame = self.squareView.bounds;
+    self.leftProgressView = [[TVLeftProgressView alloc] initWithFrame:self.squareView.bounds];
     [self.squareView addSubview:self.leftProgressView];
     
     self.bgRateLabel = [[UILabel alloc] initWithFrame:self.squareView.frame];
@@ -94,6 +109,10 @@ CGFloat progress = 0;
     [self.view bringSubviewToFront:self.squareView];
 
     [self circleForProgress:progress];
+}
+
+- (void)buttonAction:(UIButton *)button {
+    [self.circularProgressView startAnimation];
 }
 
 - (void)addGestures {
@@ -144,6 +163,7 @@ CGFloat progress = 0;
                 self.squareView.transform = CGAffineTransformIdentity;
                 progress = 0;
                 [self circleForProgress:0];
+                self.circularProgressView.progress = progress * 0;
             } completion:nil];
         }
     }
@@ -171,11 +191,15 @@ CGFloat progress = 0;
 
 - (void)swipeProgressForTranslation:(CGPoint)translation {
     progress = fabs(translation.x) / (self.squareView.frame.size.width / 2);
-    if (progress >= 0.9) {
+    if (progress >= 0.95) {
         self.completeActionOnDragRelease = YES;
     } else {
         self.completeActionOnDragRelease = NO;
     }
+    if (progress > 1) {
+        progress = 1;
+    }
+    self.circularProgressView.progress = progress * 100;
     [self circleForProgress:progress];
 }
 
